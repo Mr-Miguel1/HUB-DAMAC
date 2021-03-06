@@ -6,6 +6,8 @@ from scrap import scraping_BR,scraping_DANE
 from excel import guardar_excel
 from limpieza import clean_informalidad
 
+print('Hello')
+
 class HUB_DAMAC():
 
     
