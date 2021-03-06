@@ -31,11 +31,15 @@ def clean_informalidad(path):
                     tasa_informalidad = pd.concat([periodo,tasa],axis=1)
                     print('Limpieza Exitosa')
                 except:
-                    print('No se pudo limpiar correctamente la tasa de informalidad')
+                    print("""No se pudo limpiar correctamente la tasa de informalidad, 
+                    asegurese de instalar xlrd use pip install xlrd y luego conda install xlrd en la consola""")
 
         tasa_informalidad.to_csv(path+'\Informalidad.csv',sep=';',decimal=',')  
         os.remove(path+'\{}'.format(dane_informalidad_nombre))
     except:
         pass
 
-clean_informalidad(path=r"D:\Desktop\Laboral")
+
+
+
+
