@@ -148,7 +148,47 @@ class HUB_DAMAC():
                     NOTA: Se recomienda tener el cortafuegos desactivado o darle permisos de administrador para tener acceso a la red
                         pública
                     """
+        def actualizar(self,carpeta,actualizar_todo = False,indicadores='',excel=False,hipervinculos=False):
+
+            fuente_pib = pd.DataFrame({
+            'Indicador':['Consumo final, real','Crecimiento PIB real, ajuste estacional','Exportaciones, real'],
+                
+            'Frecuencia': ['Trimestral','Trimestral','Trimestral'],
+
+            'Fuente': ['https://totoro.banrep.gov.co/estadisticas-economicas/','https://totoro.banrep.gov.co/estadisticas-economicas/',
+                       'https://totoro.banrep.gov.co/estadisticas-economicas/']
+            })
+            
+
+            if actualizar_todo:
+                for i in fuente_pib['Indicador']:
+                    if i != 'Informalidad':
+                        try:
+                            self.i = scraping_BR(1,indicador=i,path=carpeta)
+                        except:
+                            continue
+                    elif i == 'Informalidad':
+                        self.informalidad = scraping_DANE().scraping_dane_mercado_laboral(path=carpeta)
+            else:
+                for i in indicadores:
+                    if i != 'Informalidad':
+                        try:
+                            self.i = scraping_BR(1,indicador=i,path=carpeta)
+                        except:
+                            continue
+                    elif i == 'Informalidad':
+                        self.informalidad = scraping_DANE().scraping_dane_mercado_laboral(path=carpeta)
+                        
+            try:
+                clean_informalidad(path=carpeta)
+            except:
+                pass
+
+            if excel:
+                self.excel = guardar_excel(Fuente=fuente_pib,carpeta_origen=carpeta,carpeta_destino=carpeta,nombre_archivo='hub_pib',hyperlinks=hipervinculos)
+            else:
+                print('Esta bien no genero el excel')
                     
-        indicadores_pib = pd.DataFrame({})
+        
 
 

@@ -36,9 +36,9 @@ def guardar_excel(Fuente,carpeta_origen,nombre_archivo,carpeta_destino,hyperlink
         
         if len(ind) > 30:
             ind2 = ind[:30]
-            sheet_name = ind2.replace(' ','_')
+            sheet_name = ind2.replace(' ','_').replace(',','')
         else:
-            sheet_name = ind[:-4].replace(' ','_')
+            sheet_name = ind[:-4].replace(' ','_').replace(',','')
         
         wss = wb.create_sheet("{}".format(sheet_name))
         wss.append(header)
