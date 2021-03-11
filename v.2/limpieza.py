@@ -1,7 +1,14 @@
 import pandas as pd
 import numpy as np
+
+from openpyxl import Workbook
+from openpyxl.utils import get_column_letter
+from openpyxl.utils.dataframe import dataframe_to_rows
+from openpyxl import load_workbook
+
 import os
 import xlrd
+import shutil
 
 class limpieza_mercado_laboral():
     
@@ -37,12 +44,12 @@ class limpieza_mercado_laboral():
                         print("""No se pudo limpiar correctamente la tasa de informalidad, 
                         asegurese de instalar xlrd use pip install xlrd y luego conda install xlrd en la consola""")
 
-            tasa_informalidad.to_csv(path+'\Informalidad.csv',sep=';',decimal=',')  
+            tasa_informalidad.to_csv(path+'\Informalidad.csv',sep=';',decimal=',',index=False)  
             os.remove(path+'\{}'.format(dane_informalidad_nombre))
         except:
             pass
 
-    def clean_desempleo_empleo_mensual(path):
+    def clean_desempleo_empleo_mensual(self,path):
         try:
             archivos = pd.Series(os.listdir(path))
             dane_des_emp_mensual_nombre = archivos[archivos.str.contains('anexo_desestacionalizado_empleo')][0]
@@ -80,26 +87,27 @@ class limpieza_mercado_laboral():
             pass
 
 
-    def clean_desempleo_empleo_sexo(path):
-    archivos = pd.Series(os.listdir(path))
-    dane_sexo_nombre = archivos[archivos.str.contains('anexo_sexo_')][0]
+    def clean_desempleo_empleo_sexo(self,path):
+        try:
+            archivos = pd.Series(os.listdir(path))
+            dane_sexo_nombre = archivos[archivos.str.contains('anexo_sexo_')][0]
 
-    for i in archivos:
-        if i == dane_sexo_nombre:
-            try: 
-                data = load_workbook(path+"\{}".format(i))
-                sheets = data.sheetnames
-            except:
-                data = xlrd.open_workbook_xls(path+"\{}".format(i))
-                sheets = data.sheet_names()
+            for i in archivos:
+                if i == dane_sexo_nombre:
+                    try: 
+                        data = load_workbook(path+"\{}".format(i))
+                        sheets = data.sheetnames
+                    except:
+                        data = xlrd.open_workbook_xls(path+"\{}".format(i))
+                        sheets = data.sheet_names()
 
-            sheets = pd.Series(sheets).str.lower().str.replace(' ','')
-            tnal_nacional_sexo_index = sheets[sheets.str.contains('pytn')].index[0]
+                    sheets = pd.Series(sheets).str.lower().str.replace(' ','')
+                    tnal_nacional_sexo_index = sheets[sheets.str.contains('pytn')].index[0]
 
-            df = pd.read_excel(path+"\{}".format(i),sheet_name=tnal_nacional_sexo_index)
+                    df = pd.read_excel(path+"\{}".format(i),sheet_name=tnal_nacional_sexo_index)
 
 
-            ind = [i.lower().replace(' ','_') for i in pd.Series("""% población en edad de trabajar 
+                    ind = [i.lower().replace(' ','_') for i in pd.Series("""% población en edad de trabajar 
 TGP
 TO
 TD
@@ -115,46 +123,49 @@ Ocultos
 Inactivos""").str.split('\n')[0]]
 
 
-            series_tnac = pd.DataFrame({})
-            series_hombres = pd.DataFrame({})
-            series_mujeres = pd.DataFrame({})
+                    series_tnac = pd.DataFrame({})
+                    series_hombres = pd.DataFrame({})
+                    series_mujeres = pd.DataFrame({})
 
-            for i in ind:
+                    for i in ind:
 
-                # Total Nacional
-                ser_index_nac = df[df.applymap(lambda x: str(x).lower().replace(' ','_') == i)].dropna(how='all',axis=0).index[0]
+                        # Total Nacional
+                        ser_index_nac = df[df.applymap(lambda x: str(x).lower().replace(' ','_') == i)].dropna(how='all',axis=0).index[0]
 
-                if ser_index_nac:
-                    ser = df.iloc[ser_index_nac,1:].rename(i) 
-                    if i == 'tgp' or i== 'to' or i == 'td' or i == 't.d._abierto' or i == 't.d._oculto':
-                        ser = ser.set_axis(pd.date_range(start='2001-01-01',periods=len(ser),freq='M')).astype('float')
-                    else:
-                        ser = ser.set_axis(pd.date_range(start='2001-01-01',periods=len(ser),freq='M')).astype('float')*1000
-                    series_tnac[i] = ser
+                        if ser_index_nac:
+                            ser = df.iloc[ser_index_nac,1:].rename(i) 
+                            if i == 'tgp' or i== 'to' or i == 'td' or i == 't.d._abierto' or i == 't.d._oculto':
+                                ser = ser.set_axis(pd.date_range(start='2001-01-01',periods=len(ser),freq='M')).astype('float')
+                            else:
+                                ser = ser.set_axis(pd.date_range(start='2001-01-01',periods=len(ser),freq='M')).astype('float')*1000
+                            series_tnac[i] = ser
 
-                #Hombres
-                ser_index_hom = df[df.applymap(lambda x: str(x).lower().replace(' ','_') == i)].dropna(how='all',axis=0).index[1]
+                        #Hombres
+                        ser_index_hom = df[df.applymap(lambda x: str(x).lower().replace(' ','_') == i)].dropna(how='all',axis=0).index[1]
 
-                if ser_index_hom:
-                    ser = df.iloc[ser_index_hom,1:].rename(i)  
-                    if i == 'tgp' or i== 'to' or i == 'td' or i == 't.d._abierto' or i == 't.d._oculto':
-                        ser = ser.set_axis(pd.date_range(start='2001-01-01',periods=len(ser),freq='M')).astype('float')
-                    else:
-                        ser = ser.set_axis(pd.date_range(start='2001-01-01',periods=len(ser),freq='M')).astype('float')*1000
-                    series_hombres[i] = ser
+                        if ser_index_hom:
+                            ser = df.iloc[ser_index_hom,1:].rename(i)  
+                            if i == 'tgp' or i== 'to' or i == 'td' or i == 't.d._abierto' or i == 't.d._oculto':
+                                ser = ser.set_axis(pd.date_range(start='2001-01-01',periods=len(ser),freq='M')).astype('float')
+                            else:
+                                ser = ser.set_axis(pd.date_range(start='2001-01-01',periods=len(ser),freq='M')).astype('float')*1000
+                            series_hombres[i] = ser
 
-                #Mujeres
-                ser_index_muj = df[df.applymap(lambda x: str(x).lower().replace(' ','_') == i)].dropna(how='all',axis=0).index[2]
+                        #Mujeres
+                        ser_index_muj = df[df.applymap(lambda x: str(x).lower().replace(' ','_') == i)].dropna(how='all',axis=0).index[2]
 
-                if ser_index_muj:
-                    ser = df.iloc[ser_index_muj,1:].rename(i)  
-                    if i == 'tgp' or i== 'to' or i == 'td' or i == 't.d._abierto' or i == 't.d._oculto':
-                        ser = ser.set_axis(pd.date_range(start='2001-01-01',periods=len(ser),freq='M')).astype('float')
-                    else:
-                        ser = ser.set_axis(pd.date_range(start='2001-01-01',periods=len(ser),freq='M')).astype('float')*1000
-                    series_mujeres[i] = ser
+                        if ser_index_muj:
+                            ser = df.iloc[ser_index_muj,1:].rename(i)  
+                            if i == 'tgp' or i== 'to' or i == 'td' or i == 't.d._abierto' or i == 't.d._oculto':
+                                ser = ser.set_axis(pd.date_range(start='2001-01-01',periods=len(ser),freq='M')).astype('float')
+                            else:
+                                ser = ser.set_axis(pd.date_range(start='2001-01-01',periods=len(ser),freq='M')).astype('float')*1000
+                            series_mujeres[i] = ser
 
-    series_tnac.to_csv(path+"\sexo_tnac.csv",sep=';',decimal=',')
-    series_hombres.to_csv(path+"\sexo_hombres.csv",sep=';',decimal=',')
-    series_hombres.to_csv(path+"\sexo_mujeres.csv",sep=';',decimal=',')
-    os.remove(path+"\{}".format(dane_sexo_nombre))
+            series_tnac.to_csv(path+"\desempleo_tnac.csv",sep=';',decimal=',')
+            series_hombres.to_csv(path+"\desempleo_hombres.csv",sep=';',decimal=',')
+            series_hombres.to_csv(path+"\desempleo_mujeres.csv",sep=';',decimal=',')
+            os.remove(path+"\{}".format(dane_sexo_nombre))
+        except:
+            print('El : {} no se pudo limpiar correctamente'.format(dane_sexo_nombre))
+            pass

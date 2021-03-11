@@ -165,11 +165,11 @@ class scraping_DANE_mercado_laboral():
         driver4.close()
         return ('La descarga de la tasa de informalidad fue exitosa')
 
-    def desempleo_desetacionalizada_mensual():
+    def desempleo_desetacionalizada_mensual(self,path):
         options = webdriver.ChromeOptions()
         options.add_argument('--start-maximized')
         options.add_argument('--disable-extensions')
-        options.add_experimental_option("prefs", {"download.default_directory":r"D:\Desktop\HUB\mercado_laboral", "download.prompt_for_download": False,
+        options.add_experimental_option("prefs", {"download.default_directory":path, "download.prompt_for_download": False,
         "download.directory_upgrade": True,
         "safebrowsing.enabled": True}) 
 
@@ -197,11 +197,11 @@ class scraping_DANE_mercado_laboral():
         return ('La descarga de la tasa desempleo desestacionalizada mensual fue exitosa')
     
     
-    def desempleo_sexo():
+    def desempleo_sexo(self,path):
         options = webdriver.ChromeOptions()
         options.add_argument('--start-maximized')
         options.add_argument('--disable-extensions')
-        options.add_experimental_option("prefs", {"download.default_directory":r"D:\Desktop\HUB\mercado_laboral", "download.prompt_for_download": False,
+        options.add_experimental_option("prefs", {"download.default_directory":path, "download.prompt_for_download": False,
         "download.directory_upgrade": True,
         "safebrowsing.enabled": True}) 
 
@@ -222,8 +222,7 @@ class scraping_DANE_mercado_laboral():
             .until(EC.element_to_be_clickable((By.LINK_TEXT,"Anexos")))\
             .click()
         except:
-            print('Hubo un problema al descargar el desempleo desestacionalizado ')
-           
-        time.sleep(7)
+            print('Hubo un problema al descargar el desempleo desestacionalizado ')    
+        time.sleep(15)
         driver.close()
         return ('La descarga de la tasa de desmpleo por sexo fue exitosa')

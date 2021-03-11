@@ -2,9 +2,9 @@ import pandas as pd
 import numpy as np
 import time
 from indicadores import indicadores_xarea
-from scrap import scraping_BR,scraping_DANE
+from scrap import scraping_BR,scraping_DANE_mercado_laboral
 from excel import guardar_excel
-from limpieza import clean_informalidad
+from limpieza import limpieza_mercado_laboral
 
 
 class HUB_DAMAC():
@@ -54,14 +54,16 @@ class HUB_DAMAC():
                     NOTA: Se recomienda tener el cortafuegos desactivado o darle permisos de administrador para tener acceso a la red
                         pública
                         """
-        indicadores_laboral  = pd.DataFrame({
-            'Indicador':['Tasa de desempleo','Tasa de ocupación','Tasa global de participación','Informalidad'],
+        fuente_laboral = pd.DataFrame({
+        'Indicador':['Tasa de desempleo','Tasa de ocupación','Tasa global de participación','Informalidad','Desempleo desestacionalizado',
+                    'Desempleo por sexo'],
+        'Frecuencia': ['Mensual','Mensual','Mensual','Trimestral','Mensual','Trimestre móvil'],
+        'Fuente': ['https://totoro.banrep.gov.co/estadisticas-economicas/','https://totoro.banrep.gov.co/estadisticas-economicas/',
+        'https://totoro.banrep.gov.co/estadisticas-economicas/','https://www.dane.gov.co/index.php/estadisticas-por-tema/mercado-laboral/empleo-informal-y-seguridad-social',
+        'https://www.dane.gov.co/index.php/estadisticas-por-tema/mercado-laboral/empleo-y-desempleo/mercado-laboral-historicos',
+        "https://www.dane.gov.co/index.php/estadisticas-por-tema/mercado-laboral/segun-sexo/mercado-laboral-historicos"]
+        })
             
-            'Frecuencia': ['Mensual','Mensual','Mensual','Trimestral'],
-            
-            'Fuente': ['https://totoro.banrep.gov.co/estadisticas-economicas/','https://totoro.banrep.gov.co/estadisticas-economicas/',
-            'https://totoro.banrep.gov.co/estadisticas-economicas/','https://www.dane.gov.co/index.php/estadisticas-por-tema/mercado-laboral/empleo-informal-y-seguridad-social']
-            }) 
 
         def indicadores_mercado_laboral_BR(self):
             self.indicadores = indicadores_xarea(0)
@@ -71,36 +73,54 @@ class HUB_DAMAC():
         def actualizar(self,carpeta,actualizar_todo = False,indicadores='',excel=False,hipervinculos=False):
 
             fuente_laboral = pd.DataFrame({
-            'Indicador':['Tasa de desempleo','Tasa de ocupación','Tasa global de participación','Informalidad'],
-            'Frecuencia': ['Mensual','Mensual','Mensual','Trimestral'],
+            'Indicador':['Tasa de desempleo','Tasa de ocupación','Tasa global de participación','Informalidad','Desempleo desestacionalizado',
+                        'Desempleo por sexo'],
+            'Frecuencia': ['Mensual','Mensual','Mensual','Trimestral','Mensual','Trimestre móvil'],
             'Fuente': ['https://totoro.banrep.gov.co/estadisticas-economicas/','https://totoro.banrep.gov.co/estadisticas-economicas/',
-            'https://totoro.banrep.gov.co/estadisticas-economicas/','https://www.dane.gov.co/index.php/estadisticas-por-tema/mercado-laboral/empleo-informal-y-seguridad-social']
+            'https://totoro.banrep.gov.co/estadisticas-economicas/','https://www.dane.gov.co/index.php/estadisticas-por-tema/mercado-laboral/empleo-informal-y-seguridad-social',
+            'https://www.dane.gov.co/index.php/estadisticas-por-tema/mercado-laboral/empleo-y-desempleo/mercado-laboral-historicos',
+            "https://www.dane.gov.co/index.php/estadisticas-por-tema/mercado-laboral/segun-sexo/mercado-laboral-historicos"]
             })
             
-            lista_indicadores_BR = ['Tasa de desempleo','Tasa de ocupación','Tasa global de participación','Informalidad']
-            # lista_inficadores_DANE = ['']
+            lista_indicadores_BR = ['Tasa de desempleo','Tasa de ocupación','Tasa global de participación']
 
             if actualizar_todo:
-                for i in lista_indicadores_BR:
-                    if i != 'Informalidad':
+                for i in fuente_laboral['Indicador']:
+                    if i in lista_indicadores_BR:
                         try:
                             self.i = scraping_BR(0,indicador=i,path=carpeta)
                         except:
                             continue
                     elif i == 'Informalidad':
-                        self.informalidad = scraping_DANE().scraping_dane_mercado_laboral(path=carpeta)
+                        self.informalidad = scraping_DANE_mercado_laboral().informalidad(path=carpeta)
+                    elif i == 'Desempleo desestacionalizado':
+                        self.desestacionalizado = scraping_DANE_mercado_laboral().desempleo_desetacionalizada_mensual(path=carpeta)
+                    elif i == 'Desempleo por sexo':
+                        self.sexo = scraping_DANE_mercado_laboral().desempleo_sexo(path=carpeta)
             else:
                 for i in indicadores:
-                    if i != 'Informalidad':
+                    if i in lista_indicadores_BR:
                         try:
                             self.i = scraping_BR(0,indicador=i,path=carpeta)
                         except:
                             continue
                     elif i == 'Informalidad':
-                        self.informalidad = scraping_DANE().scraping_dane_mercado_laboral(path=carpeta)
+                        self.informalidad = scraping_DANE_mercado_laboral().informalidad(path=carpeta)
+                    elif i == 'Desempleo desestacionalizado':
+                        self.desestacionalizado = scraping_DANE_mercado_laboral().desempleo_desetacionalizada_mensual(path=carpeta)
+                    elif i == 'Desempleo por sexo':
+                        self.sexo = scraping_DANE_mercado_laboral().desempleo_sexo(path=carpeta)
                         
             try:
-                clean_informalidad(path=carpeta)
+                limpieza_mercado_laboral().clean_informalidad(path=carpeta)
+            except:
+                pass
+            try:
+                limpieza_mercado_laboral().clean_desempleo_empleo_mensual(path=carpeta)
+            except:
+                pass
+            try:
+                limpieza_mercado_laboral().clean_desempleo_empleo_sexo(path=carpeta)
             except:
                 pass
 
