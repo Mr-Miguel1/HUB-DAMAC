@@ -47,6 +47,7 @@ def guardar_excel(Fuente,carpeta_origen,nombre_archivo,carpeta_destino,hyperlink
             wss.append(val)
             
         if hyperlinks:
+                
             
             link = "{}.xlsx#{}!F1".format(nombre_archivo,sheet_name)
             name = '{}'.format(sheet_name)
@@ -54,9 +55,11 @@ def guardar_excel(Fuente,carpeta_origen,nombre_archivo,carpeta_destino,hyperlink
             ws.cell(row=ix+2, column=2).value = '=HYPERLINK("{}", "{}")'.format(link,name)
             ws.cell(row=ix+2, column=2).style = 'Hyperlink'
             ws.cell(row=ix+2, column=4).value = ind[:-4]
-
-            wss.cell(row=1,column=6).value = '=HYPERLINK("{}", "{}")'.format("{}.xlsx#Indice!A1".format(nombre_archivo),"Índice")
-            wss.cell(row=1,column=6).style = 'Hyperlink'
+            
+            ix_col = len(data.columns)+2
+            
+            wss.cell(row=1,column=ix_col).value = '=HYPERLINK("{}", "{}")'.format("{}.xlsx#Indice!A1".format(nombre_archivo),"Índice")
+            wss.cell(row=1,column=ix_col).style = 'Hyperlink'
 
 
     wb.save(carpeta_destino+"\{}.xlsx".format(nombre_archivo))

@@ -14,16 +14,32 @@ class limpieza_mercado_laboral():
     
     def clean_informalidad(self,path):
         try:
+            os.mkdir(path+"\\archivos_fuente")
+        except:
+            pass 
+        try:
             archivos =  pd.Series(os.listdir(path))
             dane_informalidad_nombre = archivos[archivos.str.contains('informalidad')].values[0]
             for i in archivos:
-                if i == dane_informalidad_nombre:
-                    try:  
-                        data= pd.read_excel(path+'\{}'.format(i),sheet_name=3)
+                if i ==  dane_informalidad_nombre:
+                    try:
+                        data = load_workbook(path+"\{}".format(i))
+                        sheets = data.sheetnames
+                    except:
+                        data = xlrd.open_workbook_xls(path+"\{}".format(i))
+                        sheets = sheets = data.sheet_names()
 
-                        index = data[data.iloc[:,0].str.contains('23 Ciudades').fillna(False)].index[0]
 
-                        data_23_ciudades = data.iloc[index:,:]
+                    #Prop informalidad Total Nacional
+                    try:
+                        sheets = pd.Series(sheets).str.lower().str.replace(' ','')
+                        tnal_nacional_informalidad_index = sheets[sheets.str.contains('informalidad')].index[0]
+
+                        df = pd.read_excel(path+"\{}".format(i),sheet_name=tnal_nacional_informalidad_index)
+
+                        index = df[df.iloc[:,0].str.contains('23 Ciudades').fillna(False)].index[0]
+
+                        data_23_ciudades = df.iloc[index:,:]
 
                         periodo = data_23_ciudades[data_23_ciudades.iloc[:,1].str.contains('Ene-').fillna(False)].dropna(axis=1).T
                         periodo.columns = ['Periodo']
@@ -39,17 +55,211 @@ class limpieza_mercado_laboral():
                         tasa.reset_index(level=0,drop=True,inplace=True)
 
                         tasa_informalidad = pd.concat([periodo,tasa],axis=1)
-                        print('Limpieza Exitosa')
+                        tasa_informalidad.to_csv(path+'\informalidad_total_Nacional.csv',sep=';',decimal=',',index=False)
                     except:
-                        print("""No se pudo limpiar correctamente la tasa de informalidad, 
-                        asegurese de instalar xlrd use pip install xlrd y luego conda install xlrd en la consola""")
+                        print('La propoción de informalidad total nacional no se pudo limpiar correctamente')
+                        pass
 
-            tasa_informalidad.to_csv(path+'\Informalidad.csv',sep=';',decimal=',',index=False)  
-            os.remove(path+'\{}'.format(dane_informalidad_nombre))
+
+                    #Informalidad Ciudad
+                    try:
+                        sheets = pd.Series(sheets).str.lower().str.replace(' ','')
+                        tnal_nacional_ciudad_index = sheets[sheets.str.contains('ciudades')].index[0]
+
+                        df = pd.read_excel(path+"\{}".format(i),sheet_name=tnal_nacional_ciudad_index)
+
+                        l = df.iloc[:,0]
+                        sup = l[l.str.contains('Total 13 ciudades y AM').fillna(False)].index[-1]
+                        inf = l[l.str.contains('23 ciudades y áreas').fillna(False)].index[-1]
+
+                        df = df.iloc[sup:inf+5,:]
+
+                        df.reset_index(level=0,drop=True,inplace=True)
+
+                        ind = [i.lower().replace(' ','_') for i in pd.Series("""Ocupados
+                        Formales
+                        Informales""").str.split('\n')[0]]
+
+                        dic = pd.DataFrame({})
+                        for j in ind:
+                            # Total Nacional
+                            ser_index_nac = df[df.applymap(lambda x: str(x).lower().replace(' ','_') == 'informales')].dropna(how='all',axis=0).index
+                        for ix in ser_index_nac:
+                            ser_ = df.iloc[ix-4:ix+1,0:]
+                            ser_ = ser_.T
+                            ser_.columns = ser_.iloc[0,:]
+                            ser_ = ser_.reset_index(level=0,drop=True).drop([0],axis=0)
+                            fecha = pd.date_range(start='2007-01-01',periods=len(ser_),freq='M',name='Fecha')
+                            ser_ = ser_.set_index(fecha,drop=True)
+                            ser_['Ocupados'] = ser_['Ocupados'].astype('float')*1000
+                            ser_['Formales'] = ser_['Formales'].astype('float')*1000
+                            ser_['Informales'] = ser_['Informales'].astype('float')*1000
+
+                            ser_ = ser_.rename(columns={'Ocupados':'Ocupados_{}'.format(ser_.columns[0][:3]),
+                                                        'Formales':'Formales_{}'.format(ser_.columns[0][:3]),
+                                                        'Informales':'Informales_{}'.format(ser_.columns[0][:3])
+                                                        })
+
+                            ser_ = ser_.fillna(method='ffill')
+
+                            dic['Trimestre Móvil'] = ser_.iloc[:,1]
+
+                            dic[ser_.columns[0]] = ser_.iloc[:,0].apply(lambda x: str(x).replace(str(x),ser_.columns[0]))
+                            dic[ser_.columns[2]] = ser_.iloc[:,2].apply(lambda x: float(x))
+                            dic[ser_.columns[3]] = ser_.iloc[:,3].apply(lambda x: float(x))
+                            dic[ser_.columns[4]] = ser_.iloc[:,4].apply(lambda x: float(x))
+
+                        dic.to_csv(path+r"\informalidad_ciudades.csv",sep=';',decimal=',',encoding='utf-8')
+                    except:
+                        print("La informalidad por Ciudades no se pudo limpiar correctamente")
+                        pass
+
+                    #Informalidad por sexo
+                    try:
+                        sheets = pd.Series(sheets).str.lower().str.replace(' ','')
+                        tnal_nacional_sexo_index = sheets[sheets.str.contains('sexo')].index[0]
+                        df = pd.read_excel(path+"\{}".format(i),sheet_name=tnal_nacional_sexo_index)
+
+                        ciudades = ["Ocupados 13 ciudades y áreas metropolitanas","Ocupados 23 ciudades y áreas metropolitanas"]
+
+                        for j in ciudades:
+                            l = df.iloc[:,0]
+                            sup = l[l.str.contains(j).fillna(False)].index[0]
+
+                            df_temp = df.iloc[sup:sup+9,:]
+                            df_temp = df_temp.T.dropna(how='all',axis=0)
+                            df_temp.columns = df_temp.iloc[0,:]
+
+                            df_temp.reset_index(level=0,drop=True,inplace=True)
+                            df_temp = df_temp.drop([0],axis=0)
+
+                            fecha = pd.date_range(start='2007-01-01',periods=len(df_temp),freq='M',name='Fecha')
+
+                            df_temp.set_index(fecha,drop=True,inplace=True)
+                            df_temp = df_temp.applymap(lambda x: float(x)*1000)
+
+                            df_temp.to_csv(path+r"\informalidad_sexo_{}.csv".format(j),sep=';',decimal=',',encoding='utf-8')
+                    except:
+                        print("La informalidad por sexo no se pudo limpiar correctamente")
+                        pass
+                    ## Imformalidad por educacion
+
+                    try:
+                        sheets = pd.Series(sheets).str.lower().str.replace(' ','')
+                        tnal_nacional_educacion_index = sheets[sheets.str.contains('educación')].index[0]
+                        df = pd.read_excel(path+"\{}".format(i),sheet_name=tnal_nacional_educacion_index)
+
+                        ciudades = ["Ocupados 13 ciudades y áreas metropolitanas","Ocupados 23 ciudades y áreas metropolitanas"]
+
+                        for j in ciudades:
+                            l = df.iloc[:,0]
+                            sup = l[l.str.contains(j).fillna(False)].index[0] 
+                            df_temp = df.iloc[sup:sup+18,:]
+                            df_temp = df_temp.T.dropna(how='all',axis=0)
+                            df_temp.columns = df_temp.iloc[0,:]
+
+                            df_temp.reset_index(level=0,drop=True,inplace=True)
+                            df_temp = df_temp.drop([0],axis=0)
+
+                            fecha = pd.date_range(start='2007-01-01',periods=len(df_temp),freq='M',name='Fecha')
+
+                            df_temp.set_index(fecha,drop=True,inplace=True)
+                            df_temp = df_temp.applymap(lambda x: float(x)*1000)
+
+                            df_temp.to_csv(path+r"\informalidad_educacion_{}.csv".format(j),sep=';',decimal=',',encoding='utf-8')
+
+                    except:
+                        print("La informalidad por educacion no se pudo limpiar correctamente")
+                        pass
+
+
+                    ## Informalidad por ramas ciiu 4a
+                    try:
+                        sheets = pd.Series(sheets).str.lower().str.replace(' ','')
+                        tnal_nacional_educacion_index = sheets[sheets.str.contains('ciiu4')].index[0]
+                        df = pd.read_excel(path+"\{}".format(i),sheet_name=tnal_nacional_educacion_index)
+
+                        ciudades = ["Total 13 áreas","Ocupados 23 ciudades y áreas metropolitanas"]
+
+                        for j in ciudades:
+                            l = df.iloc[:,0]
+                            sup = l[l.str.contains(j).fillna(False)].index[0] 
+                            df_temp = df.iloc[sup:sup+48,:]
+                            df_temp = df_temp.T.dropna(how='all',axis=0)
+                            df_temp.columns = df_temp.iloc[0,:]
+
+                            df_temp.reset_index(level=0,drop=True,inplace=True)
+                            df_temp = df_temp.drop([0],axis=0)
+
+                            fecha = pd.date_range(start='2007-01-01',periods=len(df_temp),freq='M',name='Fecha')
+
+                            df_temp.set_index(fecha,drop=True,inplace=True)
+                            df_temp = df_temp.applymap(lambda x: float(x)*1000)
+
+                            df_temp.to_csv(path+r"\informalidad_ramasciiu4a_{}.csv".format(j),sep=';',decimal=',',encoding='utf-8')
+                    except:
+                        print("La informalidad por ramas CIIU4a no se pudo limpiar corectamente")
+                        pass
+
+                    #Informalidad por Seguridad Social
+                    try:
+                        sheets = pd.Series(sheets).str.lower().str.replace(' ','')
+                        tnal_nacional_educacion_index = sheets[sheets.str.contains('seguridadsocial13')].index[0]
+                        df = pd.read_excel(path+"\{}".format(i),sheet_name=tnal_nacional_educacion_index)
+
+                        ciudades = ["Ocupados 13 ciudades y áreas metropolitanas","Ocupados 23 ciudades y áreas metropolitanas"]
+
+
+                        #Cantidad de personas
+                        for j in ciudades:
+                            l = df.iloc[:,0]
+                            sup = l[l.str.contains(j).fillna(False)].index[0] 
+                            df_temp = df.iloc[sup:sup+10,:]
+                            df_temp = df_temp.T.dropna(how='all',axis=0)
+                            df_temp.columns = df_temp.iloc[0,:]
+
+                            df_temp.reset_index(level=0,drop=True,inplace=True)
+                            df_temp = df_temp.drop([0],axis=0)
+
+                            fecha = pd.date_range(start='2007-01-01',periods=len(df_temp),freq='M',name='Fecha')
+
+                            df_temp.set_index(fecha,drop=True,inplace=True)
+                            df_temp = df_temp.applymap(lambda x: float(x)*1000)
+
+                            df_temp.to_csv(path+r"\informalidad_segsocial_cantidad_{}.csv".format(j),sep=';',decimal=',',encoding='utf-8')
+
+                        #Porcentaje de personas
+                        for j in ciudades:
+                            l = df.iloc[:,0]
+                            sup = l[l.str.contains(j).fillna(False)].index[1] 
+                            df_temp = df.iloc[sup:sup+10,:]
+                            df_temp = df_temp.T.dropna(how='all',axis=0)
+                            df_temp.columns = df_temp.iloc[0,:]
+
+                            df_temp.reset_index(level=0,drop=True,inplace=True)
+                            df_temp = df_temp.drop([0],axis=0)
+
+                            fecha = pd.date_range(start='2007-01-01',periods=len(df_temp),freq='M',name='Fecha')
+
+                            df_temp.set_index(fecha,drop=True,inplace=True)
+                            df_temp = df_temp.applymap(lambda x: float(x))
+
+                            df_temp.to_csv(path+r"\informalidad_segsocial_porcentaje_{}.csv".format(j),sep=';',decimal=',',encoding='utf-8')
+                    except:
+                        print("La informalidad por seguridad social no se pudo limpiar correctamente")
+                        pass
+
+            shutil.move(path+r'\{}'.format(dane_informalidad_nombre),path+r'\archivos_fuente\{}'.format(dane_informalidad_nombre))
         except:
             pass
 
     def clean_desempleo_empleo_mensual(self,path):
+        
+        try:
+            os.mkdir(path+"\\archivos_fuente")
+        except:
+            pass 
+        
         try:
             archivos = pd.Series(os.listdir(path))
             dane_des_emp_mensual_nombre = archivos[archivos.str.contains('anexo_desestacionalizado_empleo')].values[0]
@@ -80,7 +290,8 @@ class limpieza_mercado_laboral():
                         series[i] = ser
 
             series.to_csv(path+"\desempleo_desest_mensual.csv",sep=';',decimal=',')
-            os.remove(path+'\{}'.format(dane_des_emp_mensual_nombre))
+
+            shutil.move(path+r'\{}'.format(dane_des_emp_mensual_nombre),path+r'\archivos_fuente\{}'.format(dane_des_emp_mensual_nombre))
 
         except:
             print('El : {} no se pudo limpiar correctamente'.format(dane_des_emp_mensual_nombre))
@@ -88,6 +299,12 @@ class limpieza_mercado_laboral():
 
 
     def clean_desempleo_empleo_sexo(self,path):
+        
+        try:
+            os.mkdir(path+"\\archivos_fuente")
+        except:
+            pass      
+
         try:
             archivos = pd.Series(os.listdir(path))
             dane_sexo_nombre = archivos[archivos.str.contains('anexo_sexo_')].values[0]
@@ -165,13 +382,17 @@ Inactivos""").str.split('\n')[0]]
             series_tnac.to_csv(path+"\desempleo_tnac_sexo.csv",sep=';',decimal=',',encoding = 'utf-8')
             series_hombres.to_csv(path+"\desempleo_hombres.csv",sep=';',decimal=',',encoding = 'utf-8')
             series_mujeres.to_csv(path+"\desempleo_mujeres.csv",sep=';',decimal=',',encoding = 'utf-8')
-            os.remove(path+"\{}".format(dane_sexo_nombre))
+            shutil.move(path+r"\{}".format(dane_sexo_nombre),path+r"\archivos_fuente\{}".format(dane_sexo_nombre))
         except:
             print('El : {} no se pudo limpiar correctamente'.format(dane_sexo_nombre))
             pass
 
         
-    def clean_desempleo_empleo_regiones(self,path):
+    def clean_desempleo_empleo_regiones(self,path):        
+        try:
+            os.mkdir(path+"\\archivos_fuente")
+        except:
+            pass 
         try:
             archivos = pd.Series(os.listdir(path))
             dane_regiones_nombre = archivos[archivos.str.contains('anexo_ech_regiones')].values[0]
@@ -289,7 +510,8 @@ Inactivos""").str.split('\n')[0]]
             series_central.to_csv(path+"\desempleo_region_central.csv",sep=';',decimal=',',encoding = 'utf-8')
             series_pacifica.to_csv(path+"\desempleo_region_pacifica.csv",sep=';',decimal=',',encoding = 'utf-8')
             series_bogota.to_csv(path+"\desempleo_region_bogota.csv",sep=';',decimal=',',encoding = 'utf-8')
-            os.remove(path+"\{}".format(dane_regiones_nombre))
+            shutil.move(path+r"\{}".format(dane_regiones_nombre),path+r"\archivos_fuente\{}".format(dane_regiones_nombre))
+            
         except:
             print('El : {} no se pudo limpiar correctamente'.format(dane_regiones_nombre))
             pass
