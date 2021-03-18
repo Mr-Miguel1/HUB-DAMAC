@@ -256,3 +256,34 @@ class scraping_DANE_mercado_laboral():
         time.sleep(15+tiempo)
         driver.close()
         return ('La descarga de la tasa de desmepleo por por regiones fue exitosa')
+    
+    def desempleo_estacionalizado(self,path,tiempo):
+        options = webdriver.ChromeOptions()
+        options.add_argument('--start-maximized')
+        options.add_argument('--disable-extensions')
+        options.add_experimental_option("prefs", {"download.default_directory":path, "download.prompt_for_download": False,
+        "download.directory_upgrade": True,
+        "safebrowsing.enabled": True}) 
+
+        #Excepciones
+        ignored_exceptions=(NoSuchElementException,StaleElementReferenceException,)
+
+        ###########################################################
+        ################ OJO #####################################
+
+        # Deben descargar el chromedirver.exe en https://chromedriver.chromium.org/ si su navegador prederminado es chrome
+        driver_path = "C:/Users/Laptop/HUB_DAMAC/chromedriver.exe" #corresponde a la carpeta en la que guardo el archivo
+        driver = webdriver.Chrome(driver_path, options=options)
+
+        driver.get("https://www.dane.gov.co/index.php/estadisticas-por-tema/mercado-laboral/empleo-y-desempleo/mercado-laboral-historicos")
+
+        try:
+            WebDriverWait(driver,5+tiempo)\
+            .until(EC.element_to_be_clickable((By.LINK_TEXT,"Anexos")))\
+            .click()
+        except:
+            print('Hubo un problema al descargar el desempleo estacionalizado')
+
+        time.sleep(5+tiempo)
+        driver.close()
+        return ('La descarga de la tasa desempleo estacioanlizado fue exitosa')

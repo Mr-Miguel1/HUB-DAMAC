@@ -253,7 +253,7 @@ class limpieza_mercado_laboral():
         except:
             pass
 
-    def clean_desempleo_empleo_mensual(self,path):
+    def clean_desempleo_desestacionalizado(self,path):
         
         try:
             os.mkdir(path+"\\archivos_fuente")
@@ -262,7 +262,7 @@ class limpieza_mercado_laboral():
         
         try:
             archivos = pd.Series(os.listdir(path))
-            dane_des_emp_mensual_nombre = archivos[archivos.str.contains('anexo_desestacionalizado_empleo')].values[0]
+            dane_des_emp_mensual_nombre = archivos[archivos.str.contains('anexo_desestacionalizado_')].values[0]
 
             for i in archivos:
                 if i ==  dane_des_emp_mensual_nombre:
@@ -514,4 +514,284 @@ Inactivos""").str.split('\n')[0]]
             
         except:
             print('El : {} no se pudo limpiar correctamente'.format(dane_regiones_nombre))
+            pass
+        
+        
+    def clean_desempleo_estacionalizado(self,path):
+        
+
+        try:
+            os.mkdir(path+"\\archivos_fuente")
+        except:
+            pass
+
+        try:
+            archivos = pd.Series(os.listdir(path))
+            dane_des_emp_mensual_nombre = archivos[archivos.str.contains('anexo_empleo')].values[0]
+            for i in archivos:
+                if i ==  dane_des_emp_mensual_nombre:
+                    try:
+                        data = load_workbook(path+"\{}".format(i))
+                        sheets = pd.Series(data.sheetnames).str.lower()
+                    except:
+                        data = xlrd.open_workbook_xls(path+"\{}".format(i))
+                        sheets = pd.Series(data.sheet_names()).str.lower()
+
+                    # Desempleo estacionalizado mensual
+                    try:
+                        tnal_estacionalizado_mensual_index = sheets[sheets.str.contains('tnal mensual')].index[0]
+
+                        df = pd.read_excel(path+"\{}".format(i),sheet_name=tnal_estacionalizado_mensual_index)
+
+                        l = df.iloc[:,0]
+                        sup = l[l.str.contains('Concepto').fillna(False)].index[0]
+
+
+                        df_temp = df.iloc[sup:sup+33,:]
+                        df_temp = df_temp.T.dropna(how='all',axis=0).fillna(method='ffill')
+                        df_temp.columns = df_temp.iloc[0,:]
+
+                        df_temp.reset_index(level=0,drop=True,inplace=True)
+                        df_temp = df_temp.drop([0],axis=0)
+
+                        fecha = pd.date_range(start='2001-01-01',periods=len(df_temp),freq='M',name='Fecha')
+                        df_temp.set_index(fecha,drop=True,inplace=True) 
+                        df_temp = df_temp.dropna(how='all',axis=1)
+                        df_temp = df_temp.iloc[:,2:].applymap(lambda x: float(x))
+            #             df_temp.to_csv(path+r"\desempleo_estacionalizado_total_nacional_mensual.csv",sep=';',decimal=',',encoding='utf-8')
+                    except:
+                        print("El desempleo estacionalizado total nacional mensual no se pudo limpiar correctamente")
+                        pass
+
+
+                    # Desempleo estacionalizado divisiones 
+                    try:
+                        tnal_estacionalizado_divi_index = sheets[sheets.str.contains('tnal cabe ru trim movil')].index[0]
+
+                        df = pd.read_excel(path+r"\{}".format(i),sheet_name=tnal_estacionalizado_divi_index)
+
+
+                        divisiones = ["Total Nacional","Total Cabeceras","Centros poblados y rural disperso"]
+
+                        for j in divisiones:
+                            l = df.iloc[:,0]
+                            sup = l[l.str.contains(j).fillna(False)].index[0]
+
+
+                            df_temp = df.iloc[sup:sup+20,:]
+                            df_temp = df_temp.T.dropna(how='all',axis=0).reset_index(level=0,drop=True)
+                            df_temp.columns = df_temp.iloc[0,:]
+
+                            df_temp.reset_index(level=0,drop=True,inplace=True)
+                            df_temp = df_temp.drop([0],axis=0)
+
+                            fecha = pd.date_range(start='2001-01-01',periods=len(df_temp),freq='M',name='Fecha')
+
+                            df_temp.set_index(fecha,drop=True,inplace=True)
+                            df_temp = df_temp.iloc[:,5:].applymap(lambda x: float(x))
+
+                            df_temp.to_csv(path+r"\desempleo_estacionalizado_divisiones_{}.csv".format(j),sep=';',decimal=',',encoding='utf-8')
+                    except:
+                        print("El desempleo estacionalizado por divisiones no se pudo limpier correctamente")
+                        pass
+
+                    # Desempleo estacionalizado por areas
+                    try:
+                        tnal_estacionalizado_areas_index = sheets[sheets.str.contains('areas trim movil')].index[0]
+
+                        df = pd.read_excel(path+"\{}".format(i),tnal_estacionalizado_areas_index)
+
+                        l = df.iloc[:,0]
+                        sup = l[l.str.contains('Total 13 ciudades y áreas metropolitanas').fillna(False)].index[-1]
+                        inf = l[l.str.contains('Total 23 ciudades y A.M.').fillna(False)].index[-1]
+
+                        df = df.iloc[sup:inf+28,:]
+                        df.reset_index(level=0,drop=True,inplace=True)
+
+                        ind = [i.lower().replace(' ','_') for i in pd.Series(['% población en edad de trabajar ',
+                        'TGP',
+                        'TO',
+                        'TD',
+                        'T.D. Abierto',
+                        'T.D. Oculto',
+                        'Población total',
+                        'Población en edad de trabajar',
+                        'Población económicamente activa',
+                        'Ocupados',
+                        'Desocupados',
+                        'Abiertos',
+                        'Ocultos',
+                        'Inactivos',]).str.split(',').str[0]]
+
+                        ciudades = pd.Series(['Total 13 ciudades y áreas metropolitanas',
+                         'Bogotá',
+                         'Medellín A.M.',
+                         'Cali A.M.',
+                         'Barranquilla A.M.',
+                         'Bucaramanga A.M.',
+                         'Manizales A.M.',
+                         'Pasto',
+                         'Pereira A.M.',
+                         'Cúcuta A.M.',
+                         'Ibagué',
+                         'Montería',
+                         'Cartagena',
+                         'Villavicencio',
+                         'Tunja',
+                         'Florencia',
+                         'Popayán',
+                         'Valledupar',
+                         'Quibdó',
+                         'Neiva',
+                         'Riohacha',
+                         'Santa Marta',
+                         'Armenia',
+                         'Sincelejo',
+                         'Total 10 ciudades',
+                         'Total 23 ciudades y A.M.']).str.upper()
+
+                        ser_index_name = df[df.applymap(lambda x: str(x).lower().replace(' ','_')=='concepto')].dropna(how='all',axis=0).index[:]
+
+                        dic_ini = pd.DataFrame({})
+                        contador = 0
+                        for j in ind:
+                            ser_index_nac = df[df.applymap(lambda x: str(x).lower().replace(' ','_')==j)].dropna(how='all',axis=0).index[:]
+                            for jx in ser_index_name:
+                                ser_ = df.iloc[ser_index_nac,0:]
+                                ser_ = ser_.reset_index(level=0,drop=True)
+                                ser_.insert(0,'Ciudad',ciudades)
+
+                                contador += 1
+                                if contador == 1:
+                                    dic_ini = ser_
+
+                            dic_ini = pd.concat([dic_ini,ser_],axis=0)
+
+                        fecha = pd.date_range(start="2001-01-01",freq='M',periods=len(dic_ini.columns[2:]),name='Fecha')
+                        dic_ini.columns = ['Ciudad','Indicador'] + [i.date() for i in fecha]
+                        dic_ini = dic_ini.drop_duplicates()
+                        dic_ini = dic_ini.set_index(['Ciudad','Indicador'],drop=True)
+                        dic_ini = dic_ini.applymap(lambda x: str(x).replace('-','0'))
+                        dic_ini = dic_ini.applymap(lambda x: float(x))
+                        dic_ini.to_csv(path+r"\desempleo_estacionalizado_areas_ciudades.csv",sep=';',decimal=',',encoding='utf-8')
+                    except:
+                        print("El desempleo estacionalizado por areas no se pudo limpier correctamente")
+                        pass
+
+                    #Desempleo estacionalizado por ramas ciiu4
+                    try:
+                        tnal_estacionalizado_ramas_index = sheets[sheets.str.contains('ocup ramas trim tnal ciiu 4 ')].index[0]
+
+                        df = pd.read_excel(path+r"\{}".format(i),sheet_name=tnal_estacionalizado_ramas_index)
+
+
+                        divisiones = ["TOTAL NACIONAL","CABECERAS","CENTROS POBLADOS Y RURAL DISPERSO"]
+
+                        for j in divisiones:
+                            l = df.iloc[:,0]
+                            sup = l[l.str.contains(j).fillna(False)].index[0]
+
+
+                            df_temp = df.iloc[sup:sup+20,:]
+                            df_temp = df_temp.T.dropna(how='all',axis=0).reset_index(level=0,drop=True)
+                            df_temp.columns = df_temp.iloc[0,:]
+
+                            df_temp.reset_index(level=0,drop=True,inplace=True)
+                            df_temp = df_temp.drop([0],axis=0)
+
+                            fecha = pd.date_range(start='2015-01-01',periods=len(df_temp),freq='M',name='Fecha')
+
+                            df_temp.set_index(fecha,drop=True,inplace=True)
+                            df_temp = df_temp.iloc[:,4:].applymap(lambda x: float(x))
+
+                            df_temp.to_csv(path+r"\desempleo_estacionalizado_ramasciiu4_{}.csv".format(j),sep=';',decimal=',',encoding='utf-8')
+                    except:
+                        print("El desempleo estacionalizado por ramas ciiu4 no se pudo limpier correctamente")
+                        pass
+
+                    ## Desempleo estacionalizado por areas y ciiu (ramas y ciudades)
+                    try:
+                        tnal_estacionalizado_areasciiu_index = sheets[sheets.str.contains('ocu ramas trim 23 áreas ciiu 4')].index[0]
+
+                        df = pd.read_excel(path+"\{}".format(i),tnal_estacionalizado_areasciiu_index)
+
+                        l = df.iloc[:,0]
+                        sup = l[l.str.contains('OCUPADOS 13 CIUDADES Y ÁREAS METROPOLITANAS').fillna(False)].index[-1]
+                        inf = l[l.str.contains('SINCELEJO').fillna(False)].index[-1]
+
+                        df = df.iloc[sup:inf+20,:]
+                        df.reset_index(level=0,drop=True,inplace=True)
+
+                        ind = pd.Series(['no_informa',
+                         'agricultura,_ganadería,_caza,_silvicultura_y_pesca',
+                         'explotación_de_minas_y_canteras',
+                         'industrias_manufactureras',
+                         'suministro_de_electricidad_gas,_agua_y_gestión_de_desechos',
+                         'construcción',
+                         'comercio_y_reparación_de_vehículos',
+                         'alojamiento_y_servicios_de_comida',
+                         'transporte_y_almacenamiento',
+                         'información_y_comunicaciones',
+                         'actividades_financieras_y_de_seguros',
+                         'actividades_inmobiliarias',
+                         'actividades_profesionales,_científicas,_técnicas_y_servicios_administrativos',
+                         'administración_pública_y_defensa,_educación_y_atención_de_la_salud_humana',
+                         'actividades_artísticas,_entretenimiento,_recreación_y_otras_actividades_de_servicios',]).str.replace(',','')
+
+                        ciudades = pd.Series(['OCUPADOS 13 CIUDADES Y ÁREAS METROPOLITANAS',
+                        'MEDELLÍN A.M.',
+                        'BARRANQUILLA A.M.',
+                        'BOGOTÁ',
+                        'CARTAGENA',
+                        'MANIZALES A.M.',
+                        'MONTERÍA',
+                        'VILLAVICENCIO',
+                        'PASTO',
+                        'CÚCUTA A.M.',
+                        'PEREIRA A.M.',
+                        'BUCARAMANGA A.M.',
+                        'IBAGUÉ',
+                        'CALI  A.M.',
+                        'TUNJA',
+                        'FLORENCIA',
+                        'POPAYÁN',
+                        'VALLEDUPAR',
+                        'QUIBDÓ',
+                        'NEIVA',
+                        'RIOHACHA',
+                        'SANTA MARTA',
+                        'ARMENIA',
+                        'SINCELEJO']).str.upper()
+
+                        ser_index_name = df[df.applymap(lambda x: str(x).lower().replace(' ','_').replace(',','')=='concepto')].dropna(how='all',axis=0).index[:]
+
+                        dic_ini = pd.DataFrame({})
+                        contador = 0
+                        for j in ind:
+                            ser_index_nac = df[df.applymap(lambda x: str(x).lower().replace(' ','_').replace(',','')==j)].dropna(how='all',axis=0).index[:]
+                            for jx in ser_index_name:
+                                ser_ = df.iloc[ser_index_nac,0:]
+                                ser_ = ser_.reset_index(level=0,drop=True)
+                                ser_.insert(0,'Ciudad',ciudades)
+
+                                contador += 1
+                                if contador == 1:
+                                    dic_ini = ser_
+
+                            dic_ini = pd.concat([dic_ini,ser_],axis=0)
+
+                        fecha = pd.date_range(start="2015-01-01",freq='M',periods=len(dic_ini.columns[2:]),name='Fecha')
+                        dic_ini.columns = ['Ciudad','Indicador'] + [i.date() for i in fecha]
+                        dic_ini = dic_ini.drop_duplicates()
+                        dic_ini = dic_ini.set_index(['Ciudad','Indicador'],drop=True)
+                        dic_ini = dic_ini.applymap(lambda x: str(x).replace('-','0'))
+                        dic_ini = dic_ini.applymap(lambda x: float(x)*1000)
+                        dic_ini.to_csv(path+r"\desempleo_estacionalizado_areasciiu4_ciudadesyramas.csv",sep=';',decimal=',',encoding='utf-8')
+                    except:
+                        print("El desempleo estacionalizado por ramas ciiu4 y ciudades no se pudo limpier correctamente")
+                        pass
+                    
+            shutil.move(path+r"\{}".format(dane_regiones_nombre),path+r"\archivos_fuente\{}".format(dane_des_emp_mensual_nombre))
+        except:
+            print('El : {} no se pudo limpiar correctamente'.format(dane_des_emp_mensual_nombre))
             pass

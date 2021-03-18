@@ -61,9 +61,10 @@ class HUB_DAMAC():
                      'Informalidad',
                      'Desempleo_desestacionalizado',
                      'Desempleo_por_sexo',
-                     'Desempleo_por_region'],
+                     'Desempleo_por_region',
+                     'Desempleo_estacionalizado'],
             
-        'Frecuencia': ['Mensual','Mensual','Mensual','Trimestral','Mensual','Trimestre móvil','Semestral'],
+        'Frecuencia': ['Mensual','Mensual','Mensual','Trimestral','Mensual','Trimestre móvil','Semestral','Trimestre móvil'],
             
         'Fuente': ['https://totoro.banrep.gov.co/estadisticas-economicas/',
                    'https://totoro.banrep.gov.co/estadisticas-economicas/',
@@ -71,7 +72,8 @@ class HUB_DAMAC():
                    'https://www.dane.gov.co/index.php/estadisticas-por-tema/mercado-laboral/empleo-informal-y-seguridad-social',
                    'https://www.dane.gov.co/index.php/estadisticas-por-tema/mercado-laboral/empleo-y-desempleo/mercado-laboral-historicos',
                    "https://www.dane.gov.co/index.php/estadisticas-por-tema/mercado-laboral/segun-sexo/mercado-laboral-historicos",
-                   'https://www.dane.gov.co/index.php/estadisticas-por-tema/mercado-laboral/por-regiones/mercado-laboral-por-regiones-historicos']
+                   'https://www.dane.gov.co/index.php/estadisticas-por-tema/mercado-laboral/por-regiones/mercado-laboral-por-regiones-historicos',
+                  'https://www.dane.gov.co/index.php/estadisticas-por-tema/mercado-laboral/empleo-y-desempleo/mercado-laboral-historicos']
         })
             
 
@@ -89,9 +91,10 @@ class HUB_DAMAC():
                      'Informalidad',
                      'Desempleo_desestacionalizado',
                      'Desempleo_por_sexo',
-                     'Desempleo_por_region'],
+                     'Desempleo_por_region',
+                     'Desempleo_estacionalizado'],
             
-        'Frecuencia': ['Mensual','Mensual','Mensual','Trimestral','Mensual','Trimestre móvil','Semestral'],
+        'Frecuencia': ['Mensual','Mensual','Mensual','Trimestral','Mensual','Trimestre móvil','Semestral','Trimeste móvil'],
             
         'Fuente': ['https://totoro.banrep.gov.co/estadisticas-economicas/',
                    'https://totoro.banrep.gov.co/estadisticas-economicas/',
@@ -99,7 +102,8 @@ class HUB_DAMAC():
                    'https://www.dane.gov.co/index.php/estadisticas-por-tema/mercado-laboral/empleo-informal-y-seguridad-social',
                    'https://www.dane.gov.co/index.php/estadisticas-por-tema/mercado-laboral/empleo-y-desempleo/mercado-laboral-historicos',
                    "https://www.dane.gov.co/index.php/estadisticas-por-tema/mercado-laboral/segun-sexo/mercado-laboral-historicos",
-                   'https://www.dane.gov.co/index.php/estadisticas-por-tema/mercado-laboral/por-regiones/mercado-laboral-por-regiones-historicos']
+                   'https://www.dane.gov.co/index.php/estadisticas-por-tema/mercado-laboral/por-regiones/mercado-laboral-por-regiones-historicos',
+                  'https://www.dane.gov.co/index.php/estadisticas-por-tema/mercado-laboral/empleo-y-desempleo/mercado-laboral-historicos']
         })
             lista_indicadores_BR = ['Tasa de desempleo','Tasa de ocupación','Tasa global de participación']
 
@@ -118,6 +122,8 @@ class HUB_DAMAC():
                         self.sexo = scraping_DANE_mercado_laboral().desempleo_sexo(path=carpeta,tiempo=t)
                     elif i == 'Desempleo_por_region':
                         self.region = scraping_DANE_mercado_laboral().desempleo_regiones(path=carpeta,tiempo=t)
+                    elif i == 'Desempleo_estacionalizado':
+                        self.estacionalizado = scraping_DANE_mercado_laboral().desempleo_estacionalizado(path=carpeta,tiempo=t)
             else:
                 for i in indicadores:
                     if i in lista_indicadores_BR:
@@ -133,6 +139,8 @@ class HUB_DAMAC():
                         self.sexo = scraping_DANE_mercado_laboral().desempleo_sexo(path=carpeta,tiempo=t)
                     elif i == 'Desempleo_por_region':
                         self.region = scraping_DANE_mercado_laboral().desempleo_regiones(path=carpeta,tiempo=t)
+                    elif i == 'Desempleo_estacionalizado':
+                        self.estacionalizado = scraping_DANE_mercado_laboral().desempleo_estacionalizado(path=carpeta,tiempo=t)
                     else:
                         print('Indicador no válido, verifique que esté escrito correctamente')
             try:
@@ -140,7 +148,7 @@ class HUB_DAMAC():
             except:
                 pass
             try:
-                limpieza_mercado_laboral().clean_desempleo_empleo_mensual(path=carpeta)
+                limpieza_mercado_laboral().clean_desempleo_desestacionalizado(path=carpeta)
             except:
                 pass
             try:
@@ -151,6 +159,11 @@ class HUB_DAMAC():
                 limpieza_mercado_laboral().clean_desempleo_empleo_regiones(path=carpeta)
             except:
                 pass
+            try:
+                limpieza_mercado_laboral().clean_desempleo_estacionalizado(path=carpeta)
+            except:
+                pass
+                    
 
             if excel:
                 self.excel = guardar_excel(Fuente=fuente_laboral,carpeta_origen=carpeta,carpeta_destino=carpeta,nombre_archivo='hub_laboral',hyperlinks=hipervinculos)
