@@ -143,6 +143,11 @@ class HUB_DAMAC():
                         self.estacionalizado = scraping_DANE_mercado_laboral().desempleo_estacionalizado(path=carpeta,tiempo=t)
                     else:
                         print('Indicador no válido, verifique que esté escrito correctamente')
+                        
+            try:
+                limpieza_mercado_laboral().clean_mlaboral_BR(path=carpeta)
+            except:
+                pass        
             try:
                 limpieza_mercado_laboral().clean_informalidad(path=carpeta)
             except:

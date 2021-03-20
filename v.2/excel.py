@@ -35,7 +35,7 @@ def guardar_excel(Fuente,carpeta_origen,nombre_archivo,carpeta_destino,hyperlink
         values = [tuple(v) for v in data.values]
         
         if len(ind) > 30:
-            ind2 = ind[:30]
+            ind2 = ind[:27]+str(np.random.randint(100,999,1)[0])
             sheet_name = ind2.replace(' ','_').replace(',','')
         else:
             sheet_name = ind[:-4].replace(' ','_').replace(',','')
