@@ -127,6 +127,8 @@ def scraping_BR(area,indicador,path,tiempo):
 class scraping_DANE_mercado_laboral():
     
     def informalidad(self,path,tiempo):
+        
+        """ Path: Es la carpeta donde se guarda el archivo  """
 
         ### configuramos las opciones de inicio del navegador experimental
         
