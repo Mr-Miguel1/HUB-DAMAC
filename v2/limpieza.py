@@ -10,9 +10,8 @@ import os
 import xlrd
 import shutil
 
-class limpieza_mercado_laboral():
-    
-    def clean_mlaboral_BR(self,path):
+class limpieza_mercado_laboral():   
+    def clean_mlaboral_BR(path):
         try:
             os.mkdir(path+"\\archivos_fuente")
         except:
@@ -30,8 +29,8 @@ class limpieza_mercado_laboral():
         except:
             print("Los datos de BanRep no se limpiaron correctamente")
             pass
-    
-    def clean_informalidad(self,path):
+
+    def clean_informalidad(path):
         try:
             os.mkdir(path+"\\archivos_fuente")
         except:
@@ -271,13 +270,13 @@ class limpieza_mercado_laboral():
         except:
             pass
 
-    def clean_desempleo_desestacionalizado(self,path):
-        
+    def clean_desempleo_desestacionalizado(path):
+
         try:
             os.mkdir(path+"\\archivos_fuente")
         except:
             pass 
-        
+
         try:
             archivos = pd.Series(os.listdir(path))
             dane_des_emp_mensual_nombre = archivos[archivos.str.contains('anexo_desestacionalizado_')].values[0]
@@ -316,8 +315,8 @@ class limpieza_mercado_laboral():
             pass
 
 
-    def clean_desempleo_empleo_sexo(self,path):
-        
+    def clean_desempleo_empleo_sexo(path):
+
         try:
             os.mkdir(path+"\\archivos_fuente")
         except:
@@ -343,19 +342,19 @@ class limpieza_mercado_laboral():
 
 
                     ind = [i.lower().replace(' ','_') for i in pd.Series("""% población en edad de trabajar 
-TGP
-TO
-TD
-T.D. Abierto
-T.D. Oculto
-Población total
-Población en edad de trabajar
-Población económicamente activa
-Ocupados
-Desocupados
-Abiertos
-Ocultos
-Inactivos""").str.split('\n')[0]]
+    TGP
+    TO
+    TD
+    T.D. Abierto
+    T.D. Oculto
+    Población total
+    Población en edad de trabajar
+    Población económicamente activa
+    Ocupados
+    Desocupados
+    Abiertos
+    Ocultos
+    Inactivos""").str.split('\n')[0]]
 
 
                     series_tnac = pd.DataFrame({})
@@ -405,8 +404,8 @@ Inactivos""").str.split('\n')[0]]
             print('El : {} no se pudo limpiar correctamente'.format(dane_sexo_nombre))
             pass
 
-        
-    def clean_desempleo_empleo_regiones(self,path):        
+
+    def clean_desempleo_empleo_regiones(path):        
         try:
             os.mkdir(path+"\\archivos_fuente")
         except:
@@ -431,19 +430,19 @@ Inactivos""").str.split('\n')[0]]
 
 
                     ind = [i.lower().replace(' ','_') for i in pd.Series("""% población en edad de trabajar 
-TGP
-TO
-TD
-T.D. Abierto
-T.D. Oculto
-Población total
-Población en edad de trabajar
-Población económicamente activa
-Ocupados
-Desocupados
-Abiertos
-Ocultos
-Inactivos""").str.split('\n')[0]]
+    TGP
+    TO
+    TD
+    T.D. Abierto
+    T.D. Oculto
+    Población total
+    Población en edad de trabajar
+    Población económicamente activa
+    Ocupados
+    Desocupados
+    Abiertos
+    Ocultos
+    Inactivos""").str.split('\n')[0]]
 
 
                     series_tnac = pd.DataFrame({})
@@ -529,14 +528,14 @@ Inactivos""").str.split('\n')[0]]
             series_pacifica.to_csv(path+"\desempleo_region_pacifica.csv",sep=';',decimal=',',encoding = 'utf-8')
             series_bogota.to_csv(path+"\desempleo_region_bogota.csv",sep=';',decimal=',',encoding = 'utf-8')
             shutil.move(path+r"\{}".format(dane_regiones_nombre),path+r"\archivos_fuente\{}".format(dane_regiones_nombre))
-            
+
         except:
             print('El : {} no se pudo limpiar correctamente'.format(dane_regiones_nombre))
             pass
-        
-        
-    def clean_desempleo_estacionalizado(self,path):
-        
+
+
+    def clean_desempleo_estacionalizado(path):
+
 
         try:
             os.mkdir(path+"\\archivos_fuente")
@@ -589,8 +588,8 @@ Inactivos""").str.split('\n')[0]]
                                                '  Empleo inadecuado por ingresos_3', 'Subempleados Objetivos',
                                                '  Insuficiencia de horas_4', '  Empleo inadecuado por competencias_4',
                                                '  Empleo inadecuado por ingresos_4']
-                        
-                        
+
+
                         tasas_tnac = ['% población en edad de trabajar ', 'TGP', 'TO', 'TD', 'T.D. Abierto',
                                    'T.D. Oculto', 'Tasa de subempleo subjetivo',
                                    '  Insuficiencia de horas_1', '  Empleo inadecuado por competencias_1',
@@ -603,7 +602,7 @@ Inactivos""").str.split('\n')[0]]
                                 df_temp.iloc[:][colm] = df_temp.iloc[:][colm]/100
                             else:
                                 df_temp.iloc[:][colm] = df_temp.iloc[:][colm]*1000
-                        
+
                         df_temp.to_csv(path+r"\desempleo_estacionalizado_total_nacional_mensual.csv",sep=';',decimal=',',encoding='utf-8')
                     except:
                         print("El desempleo estacionalizado total nacional mensual no se pudo limpiar correctamente")
@@ -649,15 +648,15 @@ Inactivos""").str.split('\n')[0]]
                                                '  Empleo inadecuado por ingresos_3', 'Subempleados Objetivos',
                                                '  Insuficiencia de horas_4', '  Empleo inadecuado por competencias_4',
                                                '  Empleo inadecuado por ingresos_4']
-                            
-                            
+
+
                             tasas_div = ['% población en edad de trabajar ', 'TGP', 'TO', 'TD', 'T.D. Abierto',
                                                'T.D. Oculto', 'Tasa de subempleo subjetivo',
                                                '  Insuficiencia de horas_1', '  Empleo inadecuado por competencias_1',
                                                '  Empleo inadecuado por ingresos_1', 'Tasa de subempleo objetivo',
                                                '  Insuficiencia de horas_2', '  Empleo inadecuado por competencias_2',
                                                '  Empleo inadecuado por ingresos_2',]
-                            
+
                             for colm in df_temp.columns:
                                 if colm in tasas_div:
                                     df_temp.iloc[:][colm] = df_temp.iloc[:][colm]/100
@@ -746,15 +745,15 @@ Inactivos""").str.split('\n')[0]]
                         dic_ini = dic_ini.set_index(['Ciudad','Indicador'],drop=True)
                         dic_ini = dic_ini.applymap(lambda x: str(x).replace('-','0'))
                         dic_ini = dic_ini.applymap(lambda x: float(x))
-                        
+
                         tasas_areas = ['% población en edad de trabajar ','TGP','TO','TD','T.D. Abierto','T.D. Oculto']
-                        
+
                         for mulindex in dic_ini.index:
                             if mulindex[1] in tasas_areas:
                                 dic_ini.loc[(mulindex[0],mulindex[1])] = dic_ini.loc[(mulindex[0],mulindex[1])]/100
                             else:
                                 dic_ini.loc[(mulindex[0],mulindex[1])] = dic_ini.loc[(mulindex[0],mulindex[1])]*1000
-                                                                              
+
                         dic_fin = pd.DataFrame()
                         contador_2 = 0
 
@@ -770,7 +769,7 @@ Inactivos""").str.split('\n')[0]]
                                 dic_fin = group
                             else:   
                                 dic_fin = pd.concat([dic_fin,group]) 
-                                
+
                         dic_fin = dic_fin.rename_axis('Fecha')
                         dic_fin.to_csv(path+r"\desempleo_estacionalizado_areas_ciudades.csv",sep=';',decimal=',',encoding='utf-8')
                     except:
@@ -885,7 +884,7 @@ Inactivos""").str.split('\n')[0]]
                         dic_ini = dic_ini.set_index(['Ciudad','Indicador'],drop=True)
                         dic_ini = dic_ini.applymap(lambda x: str(x).replace('-','0'))
                         dic_ini = dic_ini.applymap(lambda x: float(x)*1000)
-                        
+
                         dic_fin = pd.DataFrame()
                         contador_2 = 0
 
@@ -901,13 +900,13 @@ Inactivos""").str.split('\n')[0]]
                                 dic_fin = group
                             else:   
                                 dic_fin = pd.concat([dic_fin,group])
-                        
+
                         dic_fin = dic_fin.rename_axis('Fecha')
                         dic_fin.to_csv(path+r"\ocupados_estacionalizado_areasciiu4_ciudadesyramas.csv",sep=';',decimal=',',encoding='utf-8')
                     except:
                         print("El desempleo estacionalizado por ramas ciiu4 y ciudades no se pudo limpier correctamente")
                         pass
-                    
+
             shutil.move(path+r"\{}".format(dane_des_emp_mensual_nombre),path+r"\archivos_fuente\{}".format(dane_des_emp_mensual_nombre))
         except:
             print('El : {} no se pudo limpiar correctamente'.format(dane_des_emp_mensual_nombre))
