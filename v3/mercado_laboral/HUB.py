@@ -8,6 +8,7 @@ from HUB_DAMAC.v3.mercado_laboral.excel import guardar_excel
 from HUB_DAMAC.v3.mercado_laboral.limpieza import clean_mlaboral_BR,clean_informalidad,clean_desempleo_desestacionalizado,\
 clean_desempleo_empleo_sexo,clean_desempleo_empleo_regiones,clean_desempleo_estacionalizado
 
+
 def actualizar_BR(carpeta,actualizar_todo = False,indicadores='',excel=False,hipervinculos=False,t=0):
     """
     actualizar_BR permite actualizar todos los indicadores o indicadores específicos que se encuentren 

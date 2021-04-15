@@ -75,7 +75,7 @@ def clean_informalidad(path):
                     tasa.reset_index(level=0,drop=True,inplace=True)
 
                     tasa_informalidad = pd.concat([periodo,tasa],axis=1)
-                    tasa_informalidad.to_csv(path+'\CSV\informalidad_total_Nacional.csv',sep=';',decimal=',',index=False)
+                    tasa_informalidad.to_csv(path+'\CSV\{}_total_Nacional.csv'.format(dane_informalidad_nombre[:-5]),sep=';',decimal=',',index=False)
                 except:
                     print('La propoción de informalidad total nacional no se pudo limpiar correctamente')
                     pass
@@ -128,7 +128,7 @@ def clean_informalidad(path):
                         dic[ser_.columns[3]] = ser_.iloc[:,3].apply(lambda x: float(x))
                         dic[ser_.columns[4]] = ser_.iloc[:,4].apply(lambda x: float(x))
 
-                    dic.to_csv(path+r"\CSV\informalidad_ciudades.csv",sep=';',decimal=',',encoding='utf-8')
+                    dic.to_csv(path+r"\CSV\{}_ciudades.csv".format(dane_informalidad_nombre[:-5]),sep=';',decimal=',',encoding='utf-8')
                 except:
                     print("La informalidad por Ciudades no se pudo limpiar correctamente")
                     pass
@@ -157,7 +157,7 @@ def clean_informalidad(path):
                         df_temp.set_index(fecha,drop=True,inplace=True)
                         df_temp = df_temp.applymap(lambda x: float(x)*1000)
 
-                        df_temp.to_csv(path+r"\CSV\informalidad_sexo_{}.csv".format(j),sep=';',decimal=',',encoding='utf-8')
+                        df_temp.to_csv(path+r"\CSV\{}_sexo_{}.csv".format(dane_informalidad_nombre[:-5],j),sep=';',decimal=',',encoding='utf-8')
                 except:
                     print("La informalidad por sexo no se pudo limpiar correctamente")
                     pass
@@ -185,7 +185,7 @@ def clean_informalidad(path):
                         df_temp.set_index(fecha,drop=True,inplace=True)
                         df_temp = df_temp.applymap(lambda x: float(x)*1000)
 
-                        df_temp.to_csv(path+r"\CSV\informalidad_educacion_{}.csv".format(j),sep=';',decimal=',',encoding='utf-8')
+                        df_temp.to_csv(path+r"\CSV\{}_educacion_{}.csv".format(dane_informalidad_nombre[:-5],j),sep=';',decimal=',',encoding='utf-8')
 
                 except:
                     print("La informalidad por educacion no se pudo limpiar correctamente")
@@ -215,7 +215,7 @@ def clean_informalidad(path):
                         df_temp.set_index(fecha,drop=True,inplace=True)
                         df_temp = df_temp.applymap(lambda x: float(x)*1000)
 
-                        df_temp.to_csv(path+r"\CSV\informalidad_ramasciiu4a_{}.csv".format(j),sep=';',decimal=',',encoding='utf-8')
+                        df_temp.to_csv(path+r"\CSV\{}_ramasciiu4a_{}.csv".format(dane_informalidad_nombre[:-5],j),sep=';',decimal=',',encoding='utf-8')
                 except:
                     print("La informalidad por ramas CIIU4a no se pudo limpiar corectamente")
                     pass
@@ -245,7 +245,7 @@ def clean_informalidad(path):
                         df_temp.set_index(fecha,drop=True,inplace=True)
                         df_temp = df_temp.applymap(lambda x: float(x)*1000)
 
-                        df_temp.to_csv(path+r"\CSV\informalidad_segsocial_cantidad_{}.csv".format(j),sep=';',decimal=',',encoding='utf-8')
+                        df_temp.to_csv(path+r"\CSV\{}_segsocial_cantidad_{}.csv".format(dane_informalidad_nombre[:-5],j),sep=';',decimal=',',encoding='utf-8')
 
                     #Porcentaje de personas
                     for j in ciudades:
@@ -263,7 +263,7 @@ def clean_informalidad(path):
                         df_temp.set_index(fecha,drop=True,inplace=True)
                         df_temp = df_temp.applymap(lambda x: float(x)/100)
 
-                        df_temp.to_csv(path+r"\CSV\informalidad_segsocial_porcentaje_{}.csv".format(j),sep=';',decimal=',',encoding='utf-8')
+                        df_temp.to_csv(path+r"\CSV\{}_segsocial_porcentaje_{}.csv".format(dane_informalidad_nombre[:-5],j),sep=';',decimal=',',encoding='utf-8')
                 except:
                     print("La informalidad por seguridad social no se pudo limpiar correctamente")
                     pass
@@ -310,7 +310,7 @@ def clean_desempleo_desestacionalizado(path):
 
                     series[i] = ser
 
-        series.to_csv(path+"\CSV\desempleo_desest_mensual.csv",sep=';',decimal=',')
+        series.to_csv(path+"\CSV\{}_mensual.csv".format(dane_des_emp_mensual_nombre[:-5]),sep=';',decimal=',')
 
         shutil.move(path+r'\{}'.format(dane_des_emp_mensual_nombre),path+r'\archivos_fuente\{}'.format(dane_des_emp_mensual_nombre))
 
@@ -402,9 +402,9 @@ Inactivos""").str.split('\n')[0]]
                             ser = ser.set_axis(pd.date_range(start='2001-01-01',periods=len(ser),freq='M',name = 'Fecha')).astype('float')*1000
                         series_mujeres[i] = ser
 
-        series_tnac.to_csv(path+"\CSV\desempleo_tnac_sexo.csv",sep=';',decimal=',',encoding = 'utf-8')
-        series_hombres.to_csv(path+"\CSV\desempleo_hombres.csv",sep=';',decimal=',',encoding = 'utf-8')
-        series_mujeres.to_csv(path+"\CSV\desempleo_mujeres.csv",sep=';',decimal=',',encoding = 'utf-8')
+        series_tnac.to_csv(path+"\CSV\{}_desempleo_tnac_sexo.csv".format(dane_sexo_nombre[:-5]),sep=';',decimal=',',encoding = 'utf-8')
+        series_hombres.to_csv(path+"\CSV\{}_desempleo_hombres.csv".format(dane_sexo_nombre[:-5]),sep=';',decimal=',',encoding = 'utf-8')
+        series_mujeres.to_csv(path+"\CSV\{}_desempleo_mujeres.csv".format(dane_sexo_nombre[:-5]),sep=';',decimal=',',encoding = 'utf-8')
         shutil.move(path+r"\{}".format(dane_sexo_nombre),path+r"\archivos_fuente\{}".format(dane_sexo_nombre))
     except:
         print('El : {} no se pudo limpiar correctamente'.format(dane_sexo_nombre))
@@ -530,12 +530,12 @@ Inactivos""").str.split('\n')[0]]
                         else:
                             ser = ser.set_axis(pd.date_range(start='2001-01-01',periods=len(ser),freq='6M',name = 'Fecha')).astype('float')*1000
                         series_bogota[i] = ser
-        series_tnac.to_csv(path+"\CSV\desempleo_tnac_regiones.csv",sep=';',decimal=',',encoding = 'utf-8')
-        series_caribe.to_csv(path+"\CSV\desempleo_region_caribe.csv",sep=';',decimal=',',encoding = 'utf-8')
-        series_oriental.to_csv(path+"\CSV\desempleo_region_oriental.csv",sep=';',decimal=',',encoding = 'utf-8')
-        series_central.to_csv(path+"\CSV\desempleo_region_central.csv",sep=';',decimal=',',encoding = 'utf-8')
-        series_pacifica.to_csv(path+"\CSV\desempleo_region_pacifica.csv",sep=';',decimal=',',encoding = 'utf-8')
-        series_bogota.to_csv(path+"\CSV\desempleo_region_bogota.csv",sep=';',decimal=',',encoding = 'utf-8')
+        series_tnac.to_csv(path+"\CSV\{}_desempleo_tnac_regiones.csv".format(dane_regiones_nombre[:-5]),sep=';',decimal=',',encoding = 'utf-8')
+        series_caribe.to_csv(path+"\CSV\{}_desempleo_region_caribe.csv".format(dane_regiones_nombre[:-5]),sep=';',decimal=',',encoding = 'utf-8')
+        series_oriental.to_csv(path+"\CSV\{}_desempleo_region_oriental.csv".format(dane_regiones_nombre[:-5]),sep=';',decimal=',',encoding = 'utf-8')
+        series_central.to_csv(path+"\CSV\{}_desempleo_region_central.csv".format(dane_regiones_nombre[:-5]),sep=';',decimal=',',encoding = 'utf-8')
+        series_pacifica.to_csv(path+"\CSV\{}_desempleo_region_pacifica.csv".format(dane_regiones_nombre[:-5]),sep=';',decimal=',',encoding = 'utf-8')
+        series_bogota.to_csv(path+"\CSV\{}_desempleo_region_bogota.csv".format(dane_regiones_nombre[:-5]),sep=';',decimal=',',encoding = 'utf-8')
         shutil.move(path+r"\{}".format(dane_regiones_nombre),path+r"\archivos_fuente\{}".format(dane_regiones_nombre))
         
     except:
@@ -613,7 +613,7 @@ def clean_desempleo_estacionalizado(path):
                         else:
                             df_temp.iloc[:][colm] = df_temp.iloc[:][colm]*1000
                     
-                    df_temp.to_csv(path+r"\CSV\desempleo_estacionalizado_total_nacional_mensual.csv",sep=';',decimal=',',encoding='utf-8')
+                    df_temp.to_csv(path+r"\CSV\{}_desempleo_estacionalizado_total_nacional_mensual.csv".format(dane_des_emp_mensual_nombre[:-5]),sep=';',decimal=',',encoding='utf-8')
                 except:
                     print("El desempleo estacionalizado total nacional mensual no se pudo limpiar correctamente")
                     pass
@@ -672,7 +672,7 @@ def clean_desempleo_estacionalizado(path):
                                 df_temp.iloc[:][colm] = df_temp.iloc[:][colm]/100
                             else:
                                 df_temp.iloc[:][colm] = df_temp.iloc[:][colm]*1000
-                        df_temp.to_csv(path+r"\CSV\desempleo_estacionalizado_divisiones_{}.csv".format(div),sep=';',decimal=',',encoding='utf-8')
+                        df_temp.to_csv(path+r"\CSV\{}_desempleo_estacionalizado_divisiones_{}.csv".format(dane_des_emp_mensual_nombre[:-5],div),sep=';',decimal=',',encoding='utf-8')
                 except:
                     print("El desempleo estacionalizado por divisiones no se pudo limpier correctamente")
                     pass
@@ -781,7 +781,7 @@ def clean_desempleo_estacionalizado(path):
                             dic_fin = pd.concat([dic_fin,group]) 
                             
                     dic_fin = dic_fin.rename_axis('Fecha')
-                    dic_fin.to_csv(path+r"\CSV\desempleo_estacionalizado_areas_ciudades.csv",sep=';',decimal=',',encoding='utf-8')
+                    dic_fin.to_csv(path+r"\CSV\{}_desempleo_estacionalizado_areas_ciudades.csv".format(dane_des_emp_mensual_nombre[:-5]),sep=';',decimal=',',encoding='utf-8')
                 except:
                     print("El desempleo estacionalizado por areas no se pudo limpier correctamente")
                     pass
@@ -812,7 +812,7 @@ def clean_desempleo_estacionalizado(path):
                         df_temp.set_index(fecha,drop=True,inplace=True)
                         df_temp = df_temp.iloc[:,4:].applymap(lambda x: float(x)*1000)
 
-                        df_temp.to_csv(path+r"\CSV\desempleo_estacionalizado_ramasciiu4_{}.csv".format(j),sep=';',decimal=',',encoding='utf-8')
+                        df_temp.to_csv(path+r"\CSV\{}_desempleo_estacionalizado_ramasciiu4_{}.csv".format(dane_des_emp_mensual_nombre[:-5],j),sep=';',decimal=',',encoding='utf-8')
                 except:
                     print("El desempleo estacionalizado por ramas ciiu4 no se pudo limpier correctamente")
                     pass
@@ -912,7 +912,7 @@ def clean_desempleo_estacionalizado(path):
                             dic_fin = pd.concat([dic_fin,group])
                     
                     dic_fin = dic_fin.rename_axis('Fecha')
-                    dic_fin.to_csv(path+r"\CSV\ocupados_estacionalizado_areasciiu4_ciudadesyramas.csv",sep=';',decimal=',',encoding='utf-8')
+                    dic_fin.to_csv(path+r"\CSV\{}_ocupados_estacionalizado_areasciiu4_ciudadesyramas.csv".format(dane_des_emp_mensual_nombre[:-5]),sep=';',decimal=',',encoding='utf-8')
                 except:
                     print("El desempleo estacionalizado por ramas ciiu4 y ciudades no se pudo limpier correctamente")
                     pass
