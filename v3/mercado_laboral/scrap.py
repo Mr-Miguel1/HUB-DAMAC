@@ -22,7 +22,8 @@ import shutil
 
 carpeta_driver = "C:/Users/Laptop/HUB_DAMAC/chromedriver.exe" ###coloque aquí la ruta de su carpeta 
 
-def scraping_BR(area,indicador,path,tiempo):
+def scraping_BR(area, indicador,
+                path, tiempo):
     """
     Esta función permite scrapear la página web del banco de la república que contiene la mayoría de indicadores
     más importantes para la economía Colombiana, página: https://totoro.banrep.gov.co/estadisticas-economicas/ 
@@ -71,7 +72,7 @@ def scraping_BR(area,indicador,path,tiempo):
     options.add_experimental_option("prefs", {"download.default_directory":path, "download.prompt_for_download": False,"download.directory_upgrade": True,"safebrowsing.enabled": True}) 
     
     #Excepciones
-    ignored_exceptions=(NoSuchElementException,StaleElementReferenceException,)
+    ignored_exceptions = (NoSuchElementException,StaleElementReferenceException,)
     
     ###########################################################
     ################ OJO #####################################
